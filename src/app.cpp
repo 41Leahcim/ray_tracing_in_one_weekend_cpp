@@ -12,7 +12,19 @@ using std::chrono::microseconds;
 using std::chrono::seconds;
 using std::chrono::duration_cast;
 
+bool hit_sphere(const Point3& center, double radius, const Ray& ray){
+    Vec3 distance_origin_center = ray.origin() - center;
+    double a = ray.direction().dot(ray.direction());
+    double b = 2.0 * distance_origin_center.dot(ray.direction());
+    double c = distance_origin_center.dot(distance_origin_center) - radius * radius;
+    double discriminant = b * b - 4 * a * c;
+    return discriminant > 0;
+}
+
 Color ray_color(const Ray& ray){
+    if(hit_sphere(Point3(0.0, 0.0, -1.0), 0.5, ray)){
+        return Color(1.0, 0.0, 0.0);
+    }
     Vec3 unit_direction = ray.direction().unit_vector();
     double time = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - time) * Color(1.0, 1.0, 1.0) + time * Color(0.5, 0.7, 1.0);
