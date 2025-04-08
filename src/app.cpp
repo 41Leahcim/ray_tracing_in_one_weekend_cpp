@@ -20,6 +20,7 @@ int main(){
     // Render the image
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
     for(uint16_t y = 0;y < image_height;y++){
+        std::clog << "\rScanlines remaining: " << (image_height - y) << ' ';
         for(uint16_t x = 0;x < image_width;x++){
             const double red = static_cast<uint8_t>(
                 static_cast<double>(x) / (image_width - 1) * 255.999
@@ -32,6 +33,6 @@ int main(){
             std::cout << red << ' ' << green << ' ' << blue << '\n';
         }
     }
-
-    std::cerr << seconds_since(start) << " seconds\n";
+    std::clog << "\rDone.                 \n";
+    std::clog << seconds_since(start) << " seconds\n";
 }
