@@ -2,6 +2,9 @@
 #include <cstdint>
 #include <chrono>
 
+#include "Vec3.hpp"
+#include "Color.hpp"
+
 namespace chrono = std::chrono;
 using chrono::steady_clock;
 
@@ -22,15 +25,12 @@ int main(){
     for(uint16_t y = 0;y < image_height;y++){
         std::clog << "\rScanlines remaining: " << (image_height - y) << ' ';
         for(uint16_t x = 0;x < image_width;x++){
-            const double red = static_cast<uint8_t>(
-                static_cast<double>(x) / (image_width - 1) * 255.999
+            const Color pixel_color = Color(
+                static_cast<double>(x) / (image_width - 1),
+                static_cast<double>(y) / (image_height - 1),
+                0
             );
-            const double green = static_cast<uint8_t>(
-                static_cast<double>(y) / (image_height - 1) * 255.999
-            );
-            const double blue = 0.0;
-
-            std::cout << red << ' ' << green << ' ' << blue << '\n';
+            write_color(std::cout, pixel_color);
         }
     }
     std::clog << "\rDone.                 \n";
