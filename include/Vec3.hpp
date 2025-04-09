@@ -8,10 +8,10 @@ class Vec3{
 private:
     std::array<double, 3> elements;
 public:
-    constexpr Vec3() noexcept : elements{0, 0, 0} {}
-    constexpr Vec3(const double e0, const double e1, const double e2) noexcept :
+    inline constexpr Vec3() noexcept : elements{0, 0, 0} {}
+    inline constexpr Vec3(const double e0, const double e1, const double e2) noexcept :
         elements{e0, e1, e2} {}
-    virtual ~Vec3() noexcept {}
+    inline virtual ~Vec3() noexcept {}
 
     inline constexpr double x() const noexcept{
         return elements[0];
