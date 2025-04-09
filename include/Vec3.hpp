@@ -106,7 +106,7 @@ public:
         return elements[0] * elements[0] + elements[1] * elements[1] + elements[2] * elements[2];
     }
 
-    inline constexpr double length() const {
+    inline constexpr double length() const noexcept {
         return std::sqrt(length_squared());
     }
 
@@ -123,8 +123,8 @@ public:
         );
     }
 
-    inline Vec3 unit_vector(const Vec3& vec){
-        return vec / vec.length();
+    inline Vec3 unit_vector() const noexcept {
+        return *this / length();
     }
 };
 
