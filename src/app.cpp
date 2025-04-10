@@ -18,18 +18,24 @@ inline double seconds_since(const steady_clock::time_point start) {
         (chrono::seconds(1) / chrono::nanoseconds(1));
 }
 
-inline bool hit_sphere(const Point3& center, double radius, const Ray& ray){
+inline double hit_sphere(const Point3& center, double radius, const Ray& ray){
     const Vec3 origin_center = center - ray.origin();
     const double a = ray.direction().dot(ray.direction());
     const double b = -2.0 * ray.direction().dot(origin_center);
     const double c = origin_center.dot(origin_center) - radius * radius;
     const double discriminant = b * b - 4 * a * c;
-    return discriminant >= 0;
+    if(discriminant < 0){
+        return -1;
+    }else{
+        return (-b - std::sqrt(discriminant)) / (2 * a);
+    }
 }
 
 inline Color ray_color(const Ray& ray) noexcept {
-    if(hit_sphere(Point3(0, 0, -1), 0.5, ray)){
-        return Color(1, 0, 0);
+    const double time = hit_sphere(Point3(0, 0, -1), 0.5, ray);
+    if(time > 0){
+        const Vec3 hit_vector = (ray.at(time) - Vec3(0, 0, -1)).unit_vector();
+        return 0.5 * Color(hit_vector.x() + 1, hit_vector.y() + 1, hit_vector.z() + 1);
     }
     const Vec3 unit_direction = ray.direction().unit_vector();
     const double a = 0.5 * (unit_direction.y() + 1.0);
