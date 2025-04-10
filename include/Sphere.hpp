@@ -10,7 +10,7 @@ private:
 public:
     inline Sphere(const Point3 center_point, const double rad) noexcept : center(center_point), radius(std::fmax(0, rad)) {}
 
-    inline bool hit(const Ray& ray, const double ray_time_min, const double ray_time_max, HitRecord& record) const override {
+    inline bool hit(const Ray& ray, const Interval ray_time, HitRecord& record) const override {
         const Vec3 origin_center = center - ray.origin();
         const double a = ray.direction().length_squared();
         const double h = ray.direction().dot(origin_center);
@@ -25,9 +25,9 @@ public:
 
         // Find the nearest root that lies in the acceptable range.
         double root = (h - sqrt_discriminant) / a;
-        if(root <= ray_time_min || root >= ray_time_max){
+        if(!ray_time.surrounds(root)){
             root = (h + sqrt_discriminant) / a;
-            if(root <= ray_time_min || root >= ray_time_max){
+            if(!ray_time.surrounds(root)){
                 return false;
             }
         }

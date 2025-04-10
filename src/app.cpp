@@ -18,7 +18,7 @@ inline double seconds_since(const steady_clock::time_point start) {
 
 inline Color ray_color(const Ray& ray, const Hittable& world) noexcept {
     HitRecord record;
-    if(world.hit(ray, 0, INFINITY, record)){
+    if(world.hit(ray, Interval(0, INFINITY), record)){
         return 0.5 * (record.normal + Color(1, 1, 1));
     }
 
@@ -32,7 +32,7 @@ int main(){
 
     // Calculate the image dimensions
     const double aspect_ratio = 16.0 / 9.0;
-    const uint16_t image_width = 2160;
+    const uint16_t image_width = 1080;
     const uint16_t image_height = static_cast<uint16_t>(std::fmax(image_width / aspect_ratio, 1));
 
     // World

@@ -20,13 +20,13 @@ struct HittableList : public Hittable {
         objects.push_back(object);
     }
 
-    inline bool hit(const Ray& ray, const double ray_time_min, const double ray_time_max, HitRecord& record) const override {
+    inline bool hit(const Ray& ray, const Interval ray_time, HitRecord& record) const override {
         bool hit_anything = false;
-        double closest_so_far = ray_time_max;
+        double closest_so_far = ray_time.max;
 
         for(const std::shared_ptr<Hittable>& object : objects){
             HitRecord temp_record;
-            if(object->hit(ray, ray_time_min, closest_so_far, temp_record)){
+            if(object->hit(ray, Interval(ray_time.min, closest_so_far), temp_record)){
                 hit_anything = true;
                 closest_so_far = temp_record.time;
                 record = temp_record;
