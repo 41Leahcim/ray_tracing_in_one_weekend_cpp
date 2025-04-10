@@ -20,14 +20,14 @@ inline double seconds_since(const steady_clock::time_point start) {
 
 inline double hit_sphere(const Point3& center, double radius, const Ray& ray){
     const Vec3 origin_center = center - ray.origin();
-    const double a = ray.direction().dot(ray.direction());
-    const double b = -2.0 * ray.direction().dot(origin_center);
-    const double c = origin_center.dot(origin_center) - radius * radius;
-    const double discriminant = b * b - 4 * a * c;
+    const double a = ray.direction().length_squared();
+    const double h = ray.direction().dot(origin_center);
+    const double c = origin_center.length_squared() - radius * radius;
+    const double discriminant = h * h - a * c;
     if(discriminant < 0){
         return -1;
     }else{
-        return (-b - std::sqrt(discriminant)) / (2 * a);
+        return (h - std::sqrt(discriminant)) /  a;
     }
 }
 
