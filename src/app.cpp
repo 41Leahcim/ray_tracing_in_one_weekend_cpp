@@ -18,7 +18,19 @@ inline double seconds_since(const steady_clock::time_point start) {
         (chrono::seconds(1) / chrono::nanoseconds(1));
 }
 
+inline bool hit_sphere(const Point3& center, double radius, const Ray& ray){
+    const Vec3 origin_center = center - ray.origin();
+    const double a = ray.direction().dot(ray.direction());
+    const double b = -2.0 * ray.direction().dot(origin_center);
+    const double c = origin_center.dot(origin_center) - radius * radius;
+    const double discriminant = b * b - 4 * a * c;
+    return discriminant >= 0;
+}
+
 inline Color ray_color(const Ray& ray) noexcept {
+    if(hit_sphere(Point3(0, 0, -1), 0.5, ray)){
+        return Color(1, 0, 0);
+    }
     const Vec3 unit_direction = ray.direction().unit_vector();
     const double a = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - a) * Color(1, 1, 1) + a * Color(0.5, 0.7, 1);
@@ -29,7 +41,7 @@ int main(){
 
     // Calculate the image dimensions
     const double aspect_ratio = 16.0 / 9.0;
-    const uint16_t image_width = 1080;
+    const uint16_t image_width = 2160;
     const uint16_t image_height = static_cast<uint16_t>(max(image_width / aspect_ratio, 1));
 
     // Camera properties
