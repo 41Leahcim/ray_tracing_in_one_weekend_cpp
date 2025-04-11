@@ -25,6 +25,10 @@ private:
     const Point3 look_at;             // Point camera is looking at
     const Vec3 vector_up;             // Camera-relative "up" direction
     Vec3 u, v, w;                     // Camera frame basis vectors
+    const double defocus_angle;       // Variation angle of rays through each pixel
+    const double focus_dist;          // Distance from camera look from point to plane of perfect focus
+    Vec3 defocus_disk_u;              // Defocus disk horizontal radius
+    Vec3 defocus_disk_v;              // Defocus disk vertical radius
 public:
     inline Camera(
         const double aspect = 1.0,
@@ -34,10 +38,13 @@ public:
         const double fov = 90,
         const Point3 camera_position = Point3(0, 0, 0),
         const Point3 camera_target = Point3(0, 0, -1),
-        const Vec3 up_direction = Vec3(0, 1, 0)
+        const Vec3 up_direction = Vec3(0, 1, 0),
+        const double defocus_angle_value = 0,
+        const double focus_distance = 10
     ) noexcept
         : samples_per_pixel(samples), pixel_samples_scale(1.0 / samples), max_depth(depth_limit),
-        vfov(fov), look_from(camera_position), look_at(camera_target), vector_up(up_direction) {
+        vfov(fov), look_from(camera_position), look_at(camera_target), vector_up(up_direction),
+        defocus_angle(defocus_angle_value), focus_dist(focus_distance) {
         // Calculate the image dimensions
         aspect_ratio = aspect;
         image_width = width;
@@ -45,10 +52,9 @@ public:
 
         // Camera properties
         // Viewport width less than one are ok since they are real values
-        const double focal_length = (look_from - look_at).length();
         const double theta = degrees_to_radians(vfov);
         const double h = std::tan(theta / 2);
-        const double viewport_height = 2 * h * focal_length;
+        const double viewport_height = 2 * h * focus_dist;
         const double viewport_width = viewport_height * (static_cast<double>(image_width) / image_height);
 
         // Calculate the u, v, w unit basis vectors forthe camera coordinate frame
@@ -66,9 +72,14 @@ public:
 
         // Calculate the location of the upper left pixel
         camera_center = look_from;
-        const Vec3 viewport_upper_left = camera_center - (focal_length * w) - viewport_u / 2
+        const Vec3 viewport_upper_left = camera_center - (focus_dist * w) - viewport_u / 2
             - viewport_v / 2;
         pixel_origin_location = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+        // Calculate the camera defocus disk basis vectors
+        const double defocus_radius = focus_dist * std::tan(degrees_to_radians(defocus_angle / 2));
+        defocus_disk_u = u * defocus_radius;
+        defocus_disk_v = v * defocus_radius;
     }
 
     inline Color ray_color(const Ray& ray, const uint8_t depth_left, const Hittable& world) const noexcept {
@@ -97,15 +108,21 @@ public:
         return Vec3(random_double() - 0.5, random_double() - 0.5, 0);
     }
 
-    /// Constructs a camera ray originating from the origin at randomly samples points around the
-    /// pixel location x, y
-    Ray get_ray(const int32_t x, const int32_t y) const {
+    /// @brief Returns a random point in the camera defocus disk
+    inline Point3 defocus_disk_sample() const {
+        const Point3 point = Point3::random_in_unit_disk();
+        return camera_center + point[0] * defocus_disk_u + point[1] * defocus_disk_v;
+    }
+
+    /// Constructs a camera ray originating from the defocus disk and directed at a randomly
+    /// sampled point around the pixel location x, y
+    inline Ray get_ray(const int32_t x, const int32_t y) const {
         const Vec3 offset = sample_square();
         const Point3 pixel_sample = pixel_origin_location
             + (x + offset.x()) * pixel_delta_u
             + (y + offset.y()) * pixel_delta_v;
 
-        const Point3 ray_origin = camera_center;
+        const Point3 ray_origin = defocus_angle <= 0? camera_center : defocus_disk_sample();
         const Vec3 ray_direction = pixel_sample - ray_origin;
 
         return Ray(ray_origin, ray_direction);

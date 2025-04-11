@@ -180,6 +180,15 @@ public:
         const Vec3 r_out_parallel = n * -std::sqrt(std::abs(1.0 - r_out_perp.length_squared()));
         return r_out_perp + r_out_parallel;
     }
+
+    inline static Vec3 random_in_unit_disk() {
+        while(true){
+            const Vec3 point(random_double(-1, 1), random_double(-1, 1), 0);
+            if(point.length_squared() < 1){
+                return point;
+            }
+        }
+    }
 };
 
 inline Vec3 operator*(const double time, const Vec3& vec) noexcept {

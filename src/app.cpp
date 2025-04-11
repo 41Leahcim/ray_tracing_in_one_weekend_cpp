@@ -38,7 +38,18 @@ int main(){
     };
 
     // Create the camera and generate the image
-    const Camera camera(16.0 / 9.0, 200, 100, 50, 20, Point3(-2, 2, 1), Point3(0, 0, -1), Vec3(0, 1, 0));
+    const Camera camera(
+        16.0 / 9.0,
+        200,
+        100,
+        50,
+        20,
+        Point3(-2, 2, 1),
+        Point3(0, 0, -1),
+        Vec3(0, 1, 0),
+        10.0,
+        3.4
+    );
     camera.render(world);
 
     std::clog << seconds_since(start) << " seconds\n";
