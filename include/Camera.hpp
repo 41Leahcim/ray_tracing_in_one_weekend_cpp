@@ -17,7 +17,7 @@ private:
     Vec3 pixel_delta_v;               // Offset to pixel below
     double aspect_ratio;              // Ratio of image width and height
     uint16_t image_width;             // Rendered image width in pixel count
-    const uint8_t samples_per_pixel;  // Count of random samples for each pixel
+    const uint16_t samples_per_pixel;  // Count of random samples for each pixel
     const double pixel_samples_scale; // Color scale factor for a sum of pixel samples.
     const uint8_t max_depth;          // Maximum number of ray bounces into scene
     const double vfov;                // Vertical view angle (field of view)
@@ -33,7 +33,7 @@ public:
     inline Camera(
         const double aspect = 1.0,
         const uint16_t width = 100,
-        const uint8_t samples = 10,
+        const uint16_t samples = 10,
         const uint8_t depth_limit = 10,
         const double fov = 90,
         const Point3 camera_position = Point3(0, 0, 0),
