@@ -53,7 +53,15 @@ private:
     // Refractive index in vacuum or air, or the ratio of the material's refractive index over
     // the refractive index of the enclosing media.
     const double refraction_index;
-public:
+
+    /// @brief Uses Schlick's approximation for reflectance
+    static constexpr double reflectance(const double cosine, const double refraction_index) noexcept {
+        double r0 = (1 - refraction_index) / (1 + refraction_index);
+        r0 *= r0;
+        return r0 + (1 - r0) * std::pow(1 - cosine, 5);
+    }
+
+    public:
     inline constexpr Dielectric(const double refraction) noexcept : refraction_index(refraction) {}
 
     inline bool scatter(
@@ -67,8 +75,8 @@ public:
         const double sin_theta = std::sqrt(1 - cos_theta * cos_theta);
         
         const bool cannot_refract = ri * sin_theta > 1.0;
-        const Vec3 direction = cannot_refract? unit_direction.reflect(record.normal) :
-            unit_direction.refract(record.normal, ri);
+        const Vec3 direction = cannot_refract || reflectance(cos_theta, ri) > random_double()?
+            unit_direction.reflect(record.normal) : unit_direction.refract(record.normal, ri);
 
         scattered = Ray(record.point, direction);
         return true;
