@@ -49,7 +49,8 @@ public:
     inline Color ray_color(const Ray& ray, const Hittable& world) const noexcept {
         HitRecord record;
         if(world.hit(ray, Interval(0, INFINITY), record)){
-            return 0.5 * (record.normal + Color(1, 1, 1));
+            const Vec3 direction = record.normal.random_on_hemisphere();
+            return 0.5 * ray_color(Ray(record.point, direction), world);
         }
 
         const Vec3 unit_direction = ray.direction().unit_vector();

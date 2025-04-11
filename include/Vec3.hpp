@@ -4,6 +4,9 @@
 #include <array>
 #include <cmath>
 
+#include "Interval.hpp"
+#include "util.hpp"
+
 class Vec3{
 private:
     std::array<double, 3> elements;
@@ -125,6 +128,35 @@ public:
 
     inline Vec3 unit_vector() const noexcept {
         return *this / length();
+    }
+
+    inline static Vec3 random() {
+        return Vec3(random_double(), random_double(), random_double());
+    }
+
+    inline static Vec3 random(const double minimum, const double maximum) {
+        return Vec3(random_double(minimum, maximum), random_double(minimum, maximum), random_double(minimum, maximum));
+    }
+
+    static inline Vec3 random_unit_vector() {
+        while(true){
+            const Vec3 point = random(-1, 1);
+            const double length_squared = point.length_squared();
+            if(Interval(1e-160, 1).contains(length_squared)){
+                return point / std::sqrt(length_squared);
+            }
+        }
+    }
+
+    inline Vec3 random_on_hemisphere() const {
+        const Vec3 on_unit_sphere = random_unit_vector();
+
+        // In the same hemisphere as the normal
+        if(on_unit_sphere.dot(*this) > 0.0){
+            return on_unit_sphere;
+        }else{
+            return -on_unit_sphere;
+        }
     }
 };
 
