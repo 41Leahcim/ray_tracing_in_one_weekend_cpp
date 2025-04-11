@@ -19,14 +19,17 @@ private:
     uint16_t image_width;             // Rendered image width in pixel count
     const uint8_t samples_per_pixel;  // Count of random samples for each pixel
     const double pixel_samples_scale; // Color scale factor for a sum of pixel samples.
-    const uint8_t max_depth = 10;     // Maximum number of ray bounces into scene
+    const uint8_t max_depth;          // Maximum number of ray bounces into scene
+    const double vfov;                // Vertical view angle (field of view)
 public:
     inline Camera(
         const double aspect = 1.0,
         const uint16_t width = 100,
         const uint8_t samples = 10,
-        const uint8_t depth_limit = 50) noexcept
-        : samples_per_pixel(samples), pixel_samples_scale(1.0 / samples), max_depth(depth_limit) {
+        const uint8_t depth_limit = 10,
+        const double fov = 90) noexcept
+        : samples_per_pixel(samples), pixel_samples_scale(1.0 / samples), max_depth(depth_limit),
+        vfov(fov) {
         // Calculate the image dimensions
         aspect_ratio = aspect;
         image_width = width;
@@ -35,7 +38,9 @@ public:
         // Camera properties
         // Viewport width less than one are ok since they are real values
         const double focal_length = 1.0;
-        const double viewport_height = 2.0;
+        const double theta = degrees_to_radians(vfov);
+        const double h = std::tan(theta / 2);
+        const double viewport_height = 2 * h * focal_length;
         const double viewport_width = viewport_height * (static_cast<double>(image_width) / image_height);
 
         // Calculate the vectors across horizontal and down vertical viewport edges.

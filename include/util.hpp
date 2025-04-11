@@ -4,7 +4,7 @@
 #include <random>
 
 inline double degrees_to_radians(const double degrees) noexcept {
-    return degrees * M_PI_2;
+    return degrees * M_PI / 180.0;
 }
 
 /// @brief Returns a random real in [0, 1) (0 inclusive, 1 exclusive).
