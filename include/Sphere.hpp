@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Hittable.hpp"
 #include "Vec3.hpp"
 
@@ -7,8 +9,10 @@ class Sphere : public Hittable {
 private:
     const Point3 center;
     const double radius;
+    const std::shared_ptr<Material> material;
 public:
-    inline Sphere(const Point3 center_point, const double rad) noexcept : center(center_point), radius(std::fmax(0, rad)) {}
+    inline Sphere(const Point3 center_point, const double rad, const std::shared_ptr<Material> mat)
+        : center(center_point), radius(std::fmax(0, rad)), material(mat) {}
 
     inline bool hit(const Ray& ray, const Interval ray_time, HitRecord& record) const override {
         const Vec3 origin_center = center - ray.origin();
@@ -37,6 +41,7 @@ public:
             .point = point,
             .normal = (point - center) / radius,
             .time = root,
+            .material = material
         };
         const Vec3 outward_normal = (record.point - center) / radius;
         record.set_face_normal(ray, outward_normal);

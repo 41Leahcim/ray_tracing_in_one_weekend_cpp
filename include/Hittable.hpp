@@ -3,11 +3,14 @@
 #include "Ray.hpp"
 #include "Interval.hpp"
 
+class Material;
+
 struct HitRecord{
     Point3 point;
     Vec3 normal;
     double time;
     bool front_face;
+    std::shared_ptr<Material> material;
 
     inline void set_face_normal(const Ray& ray, const Vec3& outward_normal) noexcept {
         // Sets the hit record normal vector.

@@ -3,6 +3,7 @@
 #include "Hittable.hpp"
 #include "Color.hpp"
 #include "util.hpp"
+#include "Material.hpp"
 
 #include <cinttypes>
 #include <iostream>
@@ -60,8 +61,12 @@ public:
 
         HitRecord record;
         if(world.hit(ray, Interval(0.001, INFINITY), record)){
-            const Vec3 direction = record.normal.random_on_hemisphere();
-            return 0.7 * ray_color(Ray(record.point, direction), depth_left - 1, world);
+            Ray scattered;
+            Color attenuation;
+            if(record.material->scatter(ray, record, attenuation, scattered)){
+                return attenuation * ray_color(scattered, depth_left - 1, world);
+            }
+            return Color(0, 0, 0);
         }
 
         const Vec3 unit_direction = ray.direction().unit_vector();

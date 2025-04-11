@@ -138,7 +138,7 @@ public:
         return Vec3(random_double(minimum, maximum), random_double(minimum, maximum), random_double(minimum, maximum));
     }
 
-    static inline Vec3 random_unit_vector() {
+    inline static Vec3 random_unit_vector() {
         while(true){
             const Vec3 point = random(-1, 1);
             const double length_squared = point.length_squared();
@@ -157,6 +157,21 @@ public:
         }else{
             return -on_unit_sphere;
         }
+    }
+
+    /// @brief Returns true if the vector is close to zero in all dimensions.
+    inline bool near_zero() const noexcept {
+        const double s = 1e-8;
+        for(const double element : elements){
+            if(std::fabs(element) >= s){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    inline Vec3 reflect(const Vec3& n) const noexcept {
+        return *this - n * (2 * this->dot(n));
     }
 };
 

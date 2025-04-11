@@ -21,11 +21,22 @@ int main(){
     const steady_clock::time_point start = steady_clock::now();
 
     // World
-    HittableList world(std::make_shared<Sphere>(Point3(0, 0, -1), 0.5));
-    world.add(std::make_shared<Sphere>(Point3(0, -100.5, -1), 100));
+    const std::array<std::shared_ptr<Material>, 4> materials{
+        std::make_shared<Lambertian>(Color(0.8, 0.8, 0)), // Ground
+        std::make_shared<Lambertian>(Color(0.1, 0.2, 0.5)), // Center
+        std::make_shared<Metal>(Color(0.8, 0.8, 0.8)), // Left
+        std::make_shared<Metal>(Color(0.8, 0.6, 0.2)), // Right
+    };
+
+    HittableList world{
+        std::make_shared<Sphere>(Point3(0, -100.5, -1), 100, materials[0]),
+        std::make_shared<Sphere>(Point3(0, 0, -1.2), 0.5, materials[1]),
+        std::make_shared<Sphere>(Point3(-1, 0, -1), 0.5, materials[2]),
+        std::make_shared<Sphere>(Point3(1, 0, -1), 0.5, materials[3]),
+    };
 
     // Create the camera and generate the image
-    const Camera camera(16.0 / 9.0, 100, 100, 50);
+    const Camera camera(16.0 / 9.0, 400, 100, 50);
     camera.render(world);
 
     std::clog << seconds_since(start) << " seconds\n";

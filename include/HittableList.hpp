@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <initializer_list>
 
 #include "Hittable.hpp"
 
@@ -11,6 +12,9 @@ struct HittableList : public Hittable {
     inline HittableList() {}
     
     inline HittableList(std::shared_ptr<Hittable> object) : objects{object} {}
+
+    inline HittableList(std::initializer_list<std::shared_ptr<Hittable>> object_list)
+        : objects(object_list) {}
 
     inline void clear() {
         objects.clear();
