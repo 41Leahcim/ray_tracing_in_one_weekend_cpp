@@ -18,8 +18,14 @@ private:
     uint16_t image_width;             // Rendered image width in pixel count
     const uint8_t samples_per_pixel;  // Count of random samples for each pixel
     const double pixel_samples_scale; // Color scale factor for a sum of pixel samples.
+    const uint8_t max_depth = 10;     // Maximum number of ray bounces into scene
 public:
-    inline Camera(const double aspect, const uint16_t width, const uint8_t samples) noexcept : samples_per_pixel(samples), pixel_samples_scale(1.0 / samples) {
+    inline Camera(
+        const double aspect = 1.0,
+        const uint16_t width = 100,
+        const uint8_t samples = 10,
+        const uint8_t depth_limit = 50) noexcept
+        : samples_per_pixel(samples), pixel_samples_scale(1.0 / samples), max_depth(depth_limit) {
         // Calculate the image dimensions
         aspect_ratio = aspect;
         image_width = width;
@@ -46,11 +52,16 @@ public:
         pixel_origin_location = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
-    inline Color ray_color(const Ray& ray, const Hittable& world) const noexcept {
+    inline Color ray_color(const Ray& ray, const uint8_t depth_left, const Hittable& world) const noexcept {
+        // If the ray bounce limit is reached, no more light is gathered
+        if(depth_left == 0){
+            return Color(0, 0, 0);
+        }
+
         HitRecord record;
         if(world.hit(ray, Interval(0, INFINITY), record)){
             const Vec3 direction = record.normal.random_on_hemisphere();
-            return 0.5 * ray_color(Ray(record.point, direction), world);
+            return 0.5 * ray_color(Ray(record.point, direction), depth_left - 1, world);
         }
 
         const Vec3 unit_direction = ray.direction().unit_vector();
@@ -86,7 +97,7 @@ public:
                 Color pixel_color(0, 0, 0);
                 for(uint8_t sample = 0;sample < samples_per_pixel;sample++){
                     const Ray ray = get_ray(x, y);
-                    pixel_color += ray_color(ray, world);
+                    pixel_color += ray_color(ray, max_depth, world);
                 }
                 write_color(std::cout, pixel_samples_scale * pixel_color);
             }
