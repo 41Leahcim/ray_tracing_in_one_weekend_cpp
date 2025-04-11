@@ -21,15 +21,23 @@ private:
     const double pixel_samples_scale; // Color scale factor for a sum of pixel samples.
     const uint8_t max_depth;          // Maximum number of ray bounces into scene
     const double vfov;                // Vertical view angle (field of view)
+    const Point3 look_from;           // Point camera is looking from
+    const Point3 look_at;             // Point camera is looking at
+    const Vec3 vector_up;             // Camera-relative "up" direction
+    Vec3 u, v, w;                     // Camera frame basis vectors
 public:
     inline Camera(
         const double aspect = 1.0,
         const uint16_t width = 100,
         const uint8_t samples = 10,
         const uint8_t depth_limit = 10,
-        const double fov = 90) noexcept
+        const double fov = 90,
+        const Point3 camera_position = Point3(0, 0, 0),
+        const Point3 camera_target = Point3(0, 0, -1),
+        const Vec3 up_direction = Vec3(0, 1, 0)
+    ) noexcept
         : samples_per_pixel(samples), pixel_samples_scale(1.0 / samples), max_depth(depth_limit),
-        vfov(fov) {
+        vfov(fov), look_from(camera_position), look_at(camera_target), vector_up(up_direction) {
         // Calculate the image dimensions
         aspect_ratio = aspect;
         image_width = width;
@@ -37,23 +45,28 @@ public:
 
         // Camera properties
         // Viewport width less than one are ok since they are real values
-        const double focal_length = 1.0;
+        const double focal_length = (look_from - look_at).length();
         const double theta = degrees_to_radians(vfov);
         const double h = std::tan(theta / 2);
         const double viewport_height = 2 * h * focal_length;
         const double viewport_width = viewport_height * (static_cast<double>(image_width) / image_height);
 
+        // Calculate the u, v, w unit basis vectors forthe camera coordinate frame
+        w = (look_from - look_at).unit_vector();
+        u = vector_up.cross(w).unit_vector();
+        v = w.cross(u);
+
         // Calculate the vectors across horizontal and down vertical viewport edges.
-        const Vec3 viewport_u(viewport_width, 0, 0);
-        const Vec3 viewport_v(0, -viewport_height, 0);
+        const Vec3 viewport_u = viewport_width * u;
+        const Vec3 viewport_v = viewport_height * -v;
 
         // Calculate the horizontal and vertical delta vectors from pixel to pixel.
         pixel_delta_u = viewport_u / image_width;
         pixel_delta_v = viewport_v / image_height;
 
         // Calculate the location of the upper left pixel
-        camera_center = Point3(0, 0, 0);
-        const Vec3 viewport_upper_left = camera_center - Vec3(0, 0, focal_length) - viewport_u / 2
+        camera_center = look_from;
+        const Vec3 viewport_upper_left = camera_center - (focal_length * w) - viewport_u / 2
             - viewport_v / 2;
         pixel_origin_location = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
