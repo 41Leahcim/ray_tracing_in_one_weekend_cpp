@@ -61,9 +61,16 @@ public:
         {
         attenuation = Color(1.0, 1.0, 1.0);
         const double ri = record.front_face ? (1 / refraction_index) : refraction_index;
+
         const Vec3 unit_direction = ray_in.direction().unit_vector();
-        const Vec3 refracted = unit_direction.refract(record.normal, ri);
-        scattered = Ray(record.point, refracted);
+        const double cos_theta = std::fmin(record.normal.dot(-unit_direction), 1);
+        const double sin_theta = std::sqrt(1 - cos_theta * cos_theta);
+        
+        const bool cannot_refract = ri * sin_theta > 1.0;
+        const Vec3 direction = cannot_refract? unit_direction.reflect(record.normal) :
+            unit_direction.refract(record.normal, ri);
+
+        scattered = Ray(record.point, direction);
         return true;
     }
 };
