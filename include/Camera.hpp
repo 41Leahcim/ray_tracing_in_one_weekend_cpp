@@ -132,16 +132,16 @@ public:
         // Render the image
         std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
         for(uint16_t y = 0;y < image_height;y++){
-            std::clog << "\rScanlines remaining: " << (image_height - y) << ' ';
             for(uint16_t x = 0;x < image_width;x++){
+                std::clog << '\r' << (image_height - y) << " lines remaining " << (image_width - x) << " pixels remaining ";
                 Color pixel_color(0, 0, 0);
-                for(uint8_t sample = 0;sample < samples_per_pixel;sample++){
+                for(uint16_t sample = 0;sample < samples_per_pixel;sample++){
                     const Ray ray = get_ray(x, y);
                     pixel_color += ray_color(ray, max_depth, world);
                 }
                 write_color(std::cout, pixel_samples_scale * pixel_color);
             }
         }
-        std::clog << "\rDone.                 \n";
+        std::clog << "\nDone.\n";
     }
 };
