@@ -25,7 +25,7 @@ int main(){
     world.add(std::make_shared<Sphere>(Point3(0, -100.5, -1), 100));
 
     // Create the camera and generate the image
-    Camera camera(16.0 / 9.0, 1080);
+    const Camera camera(16.0 / 9.0, 400, 100);
     camera.render(world);
 
     std::clog << seconds_since(start) << " seconds\n";

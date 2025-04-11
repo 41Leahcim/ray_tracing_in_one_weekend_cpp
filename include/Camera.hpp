@@ -2,21 +2,24 @@
 
 #include "Hittable.hpp"
 #include "Color.hpp"
+#include "util.hpp"
 
 #include <cinttypes>
 #include <iostream>
 
 class Camera{
 private:
-    uint16_t image_height;        // Rendered image height
-    Point3 camera_center;         // Camera center
-    Point3 pixel_origin_location; // Location of pixel 0, 0
-    Vec3 pixel_delta_u;           // Offset to pixel to the right
-    Vec3 pixel_delta_v;           // Offset to pixel below
-    double aspect_ratio;          // Ratio of image width and height
-    uint16_t image_width;         // Rendered image width in pixel count
+    uint16_t image_height;            // Rendered image height
+    Point3 camera_center;             // Camera center
+    Point3 pixel_origin_location;     // Location of pixel 0, 0
+    Vec3 pixel_delta_u;               // Offset to pixel to the right
+    Vec3 pixel_delta_v;               // Offset to pixel below
+    double aspect_ratio;              // Ratio of image width and height
+    uint16_t image_width;             // Rendered image width in pixel count
+    const uint8_t samples_per_pixel;  // Count of random samples for each pixel
+    const double pixel_samples_scale; // Color scale factor for a sum of pixel samples.
 public:
-    inline Camera(const double aspect, const uint16_t width) noexcept {
+    inline Camera(const double aspect, const uint16_t width, const uint8_t samples) noexcept : samples_per_pixel(samples), pixel_samples_scale(1.0 / samples) {
         // Calculate the image dimensions
         aspect_ratio = aspect;
         image_width = width;
@@ -54,18 +57,37 @@ public:
         return (1.0 - a) * Color(1, 1, 1) + a * Color(0.5, 0.7, 1);
     }
 
+    /// Returns the vector to a random point in the [-.5, -.5]-[.5, .5] unit square.
+    inline Vec3 sample_square() const {
+        return Vec3(random_double() - 0.5, random_double() - 0.5, 0);
+    }
+
+    /// Constructs a camera ray originating from the origin at randomly samples points around the
+    /// pixel location x, y
+    Ray get_ray(const int32_t x, const int32_t y) const {
+        const Vec3 offset = sample_square();
+        const Point3 pixel_sample = pixel_origin_location
+            + (x + offset.x()) * pixel_delta_u
+            + (y + offset.y()) * pixel_delta_v;
+
+        const Point3 ray_origin = camera_center;
+        const Vec3 ray_direction = pixel_sample - ray_origin;
+
+        return Ray(ray_origin, ray_direction);
+    }
+
     inline void render(const Hittable& world) const {
         // Render the image
         std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
         for(uint16_t y = 0;y < image_height;y++){
             std::clog << "\rScanlines remaining: " << (image_height - y) << ' ';
             for(uint16_t x = 0;x < image_width;x++){
-                const Point3 pixel_center = pixel_origin_location + (x * pixel_delta_u) +
-                    (y * pixel_delta_v);
-                const Vec3 ray_direction = pixel_center - camera_center;
-                const Ray ray(camera_center, ray_direction);
-                const Color pixel_color = ray_color(ray, world);
-                write_color(std::cout, pixel_color);
+                Color pixel_color(0, 0, 0);
+                for(uint8_t sample = 0;sample < samples_per_pixel;sample++){
+                    const Ray ray = get_ray(x, y);
+                    pixel_color += ray_color(ray, world);
+                }
+                write_color(std::cout, pixel_samples_scale * pixel_color);
             }
         }
         std::clog << "\rDone.                 \n";
