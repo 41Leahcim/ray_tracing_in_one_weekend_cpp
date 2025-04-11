@@ -173,6 +173,13 @@ public:
     inline Vec3 reflect(const Vec3& n) const noexcept {
         return *this - n * (2 * this->dot(n));
     }
+
+    inline Vec3 refract(const Vec3& n, const double etai_over_etat) const {
+        const double cos_theta = std::fmin((-*this).dot(n), 1);
+        const Vec3 r_out_perp = (*this + n * cos_theta) * etai_over_etat;
+        const Vec3 r_out_parallel = n * -std::sqrt(std::abs(1.0 - r_out_perp.length_squared()));
+        return r_out_perp + r_out_parallel;
+    }
 };
 
 inline Vec3 operator*(const double time, const Vec3& vec) noexcept {

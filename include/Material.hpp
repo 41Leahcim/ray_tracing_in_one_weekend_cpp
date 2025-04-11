@@ -47,3 +47,23 @@ public:
         return scattered.direction().dot(record.normal) > 0;
     }
 };
+
+class Dielectric : public Material {
+private:
+    // Refractive index in vacuum or air, or the ratio of the material's refractive index over
+    // the refractive index of the enclosing media.
+    const double refraction_index;
+public:
+    inline constexpr Dielectric(const double refraction) noexcept : refraction_index(refraction) {}
+
+    inline bool scatter(
+        const Ray& ray_in, const HitRecord& record, Color& attenuation, Ray& scattered) const override
+        {
+        attenuation = Color(1.0, 1.0, 1.0);
+        const double ri = record.front_face ? (1 / refraction_index) : refraction_index;
+        const Vec3 unit_direction = ray_in.direction().unit_vector();
+        const Vec3 refracted = unit_direction.refract(record.normal, ri);
+        scattered = Ray(record.point, refracted);
+        return true;
+    }
+};

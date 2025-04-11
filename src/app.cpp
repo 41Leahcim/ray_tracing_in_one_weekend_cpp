@@ -24,7 +24,7 @@ int main(){
     const std::array<std::shared_ptr<Material>, 4> materials{
         std::make_shared<Lambertian>(Color(0.8, 0.8, 0)), // Ground
         std::make_shared<Lambertian>(Color(0.1, 0.2, 0.5)), // Center
-        std::make_shared<Metal>(Color(0.8, 0.8, 0.8), 0.3), // Left
+        std::make_shared<Dielectric>(1.5), // Left
         std::make_shared<Metal>(Color(0.8, 0.6, 0.2), 1.0), // Right
     };
 
@@ -36,7 +36,7 @@ int main(){
     };
 
     // Create the camera and generate the image
-    const Camera camera(16.0 / 9.0, 400, 100, 50);
+    const Camera camera(16.0 / 9.0, 200, 100, 50);
     camera.render(world);
 
     std::clog << seconds_since(start) << " seconds\n";
