@@ -61,7 +61,7 @@ public:
         HitRecord record;
         if(world.hit(ray, Interval(0.001, INFINITY), record)){
             const Vec3 direction = record.normal.random_on_hemisphere();
-            return 0.5 * ray_color(Ray(record.point, direction), depth_left - 1, world);
+            return 0.7 * ray_color(Ray(record.point, direction), depth_left - 1, world);
         }
 
         const Vec3 unit_direction = ray.direction().unit_vector();
